@@ -1,3 +1,6 @@
+import { GenreService } from "./src/utils/GenreService.js";
+import { DateUtils } from "./src/utils/DateUtils.js";
+
 /**
  * Display a podcast preview card.
  * @class
@@ -45,6 +48,10 @@ export class PodcastPreview extends HTMLElement {
     const card = this.shadowRoot.querySelector(".card");
     if (!card) return;
 
+    const genreIds = this.getAttribute("genres")
+        ? this.getAttribute("genres").split(",").map((id) => Number(id.trim()))
+        : [];
+
     const title = this.getAttribute("title") || "Untitled";
     const image = this.getAttribute("image") || "";
     const seasons = this.getAttribute("seasons") || "0";
@@ -53,15 +60,21 @@ export class PodcastPreview extends HTMLElement {
       : [];
     const updated = this.getAttribute("updated") || "";
 
+    //Convert IDs -> names using GenreService
+    const genreNames = GenreService.getNames(genreIds);
+
+    //Format date
+    const formattedDate = updated ? DateUtils.format(updated) : "";
+
     card.querySelector("img").src = image;
     card.querySelector("img").alt = `${title} cover`;
     card.querySelector("h3").textContent = title;
     card.querySelector(".seasons").textContent =
       `${seasons} season${Number(seasons) > 1 ? "s" : ""}`;
-    card.querySelector(".tags").innerHTML = genres
+    card.querySelector(".tags").innerHTML = genreNames
       .map((g) => `<span class="tag">${g}</span>`)
       .join("");
-    card.querySelector(".updated-text").textContent = updated;
+    card.querySelector(".updated-text").textContent = formattedDate;
   }
 }
 
